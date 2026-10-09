@@ -17,6 +17,7 @@ import {
 } from "../core/pills";
 import { h, clear } from "../views/dom";
 import { agentsSection } from "./agents";
+import { customAgentsSection } from "./custom_agents";
 import { colorDot } from "./colors";
 import { renderDiff, statusDot } from "./parts";
 import {
@@ -1361,6 +1362,7 @@ async function render() {
     h("h1", {}, h("span", { text: "Coucou" }), h("span", { class: "version", text: version })),
     claudeSection(status),
     agentsSection(agents),
+    customAgentsSection(settings, save, declaredChanged),
     planSection(status),
     apiSection(hasKey),
     chatProvidersSection(chatKeys, keyChanged),

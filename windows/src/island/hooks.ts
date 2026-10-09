@@ -44,6 +44,28 @@ function cancelStopTimer(id: string): boolean {
   return true;
 }
 
+function sendCompletionNotification(name: string, message: string): void {
+  if (typeof window !== "undefined" && "Notification" in window) {
+    if (Notification.permission === "granted") {
+      try {
+        new Notification(name, {
+          body: message || t("Session finished"),
+        });
+      } catch {}
+    } else if (Notification.permission === "default") {
+      void Notification.requestPermission().then((perm) => {
+        if (perm === "granted") {
+          try {
+            new Notification(name, {
+              body: message || t("Session finished"),
+            });
+          } catch {}
+        }
+      });
+    }
+  }
+}
+
 /** Events after which a pending permission request of the same session is moot. */
 const TURN_OVER = new Set(["Stop", "StopFailure", "UserPromptSubmit", "SessionEnd", "Interrupt"]);
 
@@ -333,7 +355,7 @@ function handleHook(island: Island, payload: HookPayload) {
       // The field is `prompt`; reading `message` meant this step was always blank.
       const asked = payload.prompt ?? payload.message;
       if (asked) State.appendStep(agentId, asked.slice(0, 60));
-      surface("overview", false);
+      surface("overview", true);
       break;
     }
 
@@ -398,6 +420,7 @@ function handleHook(island: Island, payload: HookPayload) {
         if (t) t.finalLine = finalText;
       }
       Sound.play("finish");
+      sendCompletionNotification(agentName(validAgent ?? "agent"), finalText);
       // A card waiting for an answer is never covered by another alert.
       if (focused && !State.pendingApproval) surface("finished", true);
       else State.setPillBadge(agentId, "finished");

@@ -146,8 +146,29 @@ export const MAX_DECLARED = 4;
 export const HOST_OS: HostOs =
   typeof navigator !== "undefined" && /Windows/.test(navigator.userAgent ?? "") ? "windows" : "linux";
 
+let customPills: PillDefinition[] = [];
+
+export interface CustomAgentPill {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export function setCustomAgents(agents: CustomAgentPill[]) {
+  customPills = agents.map((a) => ({
+    id: `agent_${a.id}`,
+    name: a.name,
+    color: a.color,
+    category: "agent",
+    subtitle: N_("Agent"),
+    source: "agent",
+    support: "yes",
+    connect: hooks,
+  }));
+}
+
 export function pillDefinition(id: string): PillDefinition | undefined {
-  return PILL_CATALOG.find((p) => p.id === id);
+  return PILL_CATALOG.find((p) => p.id === id) ?? customPills.find((p) => p.id === id);
 }
 
 function offeredOn(def: PillDefinition, os: HostOs): boolean {
@@ -156,7 +177,7 @@ function offeredOn(def: PillDefinition, os: HostOs): boolean {
 
 /** The pills this build offers, in catalog order. */
 export function availablePills(os: HostOs = HOST_OS): PillDefinition[] {
-  return PILL_CATALOG.filter((p) => offeredOn(p, os));
+  return [...PILL_CATALOG.filter((p) => offeredOn(p, os)), ...customPills];
 }
 
 export function isComingSoon(id: string): boolean {
@@ -181,7 +202,10 @@ export function sessionSubtitle(id: string): string {
     case "agent_codex": return "Codex";
     case "agent_hermes": return "Hermes";
     case "agent_claude-desktop": return "Claude Desktop";
-    default: return N_("Agent");
+    default: {
+      const custom = customPills.find((p) => p.id === id);
+      return custom ? custom.name : N_("Agent");
+    }
   }
 }
 
@@ -238,7 +262,8 @@ export function chooseMainPill(d: Declared, id: string, os: HostOs = HOST_OS): D
  * pill (not always VS Code here) leading.
  */
 export function orderPills<T extends { id: string }>(tasks: T[], mainPill: string): T[] {
-  const index = new Map(PILL_CATALOG.map((p, i) => [p.id, i]));
+  const all = availablePills();
+  const index = new Map(all.map((p, i) => [p.id, i]));
   const rank = (t: T) => (t.id === mainPill ? -2 : index.has(t.id) ? index.get(t.id)! : -1);
   return tasks
     .map((t, i) => ({ t, i }))

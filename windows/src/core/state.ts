@@ -4,7 +4,7 @@ import type { BotEmoteName, BotStateName, IslandMode, IslandViewName } from "./l
 import type { EyeShape } from "../mochi/engine";
 import {
   DEFAULT_MAIN_PILL, HOST_OS, availablePills, orderPills, pillDefinition, sanitizeDeclared,
-  toggleDeclared, type HostOs, type PillDefinition,
+  setCustomAgents, toggleDeclared, type HostOs, type PillDefinition,
 } from "./pills";
 import type { CodexPlanUsage, PlanUsage } from "./plan";
 import type { ProviderId } from "./providers";
@@ -13,6 +13,7 @@ import type { Bindings } from "./shortcuts";
 import { DEFAULT_OUTFIT, type Outfit } from "../mochi/wardrobe";
 import { pillColor } from "./pill-colors";
 import { Spotify, musicPlaying } from "./spotify";
+import { registerCustomAgent } from "../island/agents";
 
 export type AgentSource = "claudeCode" | "n8n" | "agent";
 export type PillBadge = "approval" | "finished" | "error";
@@ -97,6 +98,13 @@ export interface IntegrationInfo {
   configured: boolean;
 }
 
+export interface CustomAgent {
+  id: string;
+  name: string;
+  color: string;
+  command?: string;
+}
+
 export interface Settings {
   soundEnabled: boolean;
   soundVolume: number;
@@ -151,6 +159,8 @@ export interface Settings {
     onDesktop: boolean;
     spot: { x: number; y: number; space: string } | null;
   };
+  /** User-defined and preset custom agents (e.g. ZAI, Manus, MiniMax, or any agent on Desktop). */
+  customAgents?: CustomAgent[];
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -179,6 +189,11 @@ export const DEFAULT_SETTINGS: Settings = {
   mochiOutfit: DEFAULT_OUTFIT,
   pillColors: {},
   language: "",
+  customAgents: [
+    { id: "zai", name: "ZAI", color: "#1E88E5" },
+    { id: "manus", name: "Manus", color: "#FF6B00" },
+    { id: "minimax", name: "MiniMax", color: "#7C3AED" },
+  ],
 };
 
 type Listener = () => void;
@@ -394,6 +409,10 @@ class AppState {
    * Safe to call any number of times. AppState.loadIntegrationTasks on macOS.
    */
   loadIntegrationTasks() {
+    setCustomAgents(this.settings.customAgents ?? []);
+    for (const a of this.settings.customAgents ?? []) {
+      registerCustomAgent(a.id, a.name, a.color);
+    }
     const d = sanitizeDeclared(this.settings, this.os);
     this.settings.mainPill = d.mainPill;
     this.settings.activeIntegrations = d.activeIntegrations;

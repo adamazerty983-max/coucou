@@ -18,7 +18,18 @@ export const KNOWN_AGENTS: Record<string, KnownAgent> = {
   amp: { name: "Amp", color: "#F59E0B" },
   hermes: { name: "Hermes", color: "#C084FC" },
   "claude-desktop": { name: "Claude Desktop", color: "#D97757" },
+  zai: { name: "ZAI", color: "#1E88E5" },
+  manus: { name: "Manus", color: "#FF6B00" },
+  minimax: { name: "MiniMax", color: "#7C3AED" },
 };
+
+/** Registers or updates a custom agent at runtime. */
+export function registerCustomAgent(id: string, name: string, color: string): boolean {
+  const valid = validateAgent(id);
+  if (!valid) return false;
+  KNOWN_AGENTS[valid] = { name, color: color.toUpperCase() };
+  return true;
+}
 
 /**
  * Agents whose permission requests get an Allow / Deny card, as on the Mac.

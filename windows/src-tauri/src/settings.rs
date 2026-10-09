@@ -69,6 +69,18 @@ pub struct Settings {
     /// Mochi on the desktop: whether he lives there, and his spot. Owned by
     /// the Rust side (desktop.rs) — what a webview sends back is ignored.
     pub desktop_mochi: DesktopMochiPref,
+    /// User-defined and preset custom agents (e.g. ZAI, Manus, MiniMax, etc.).
+    pub custom_agents: Vec<CustomAgentPref>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct CustomAgentPref {
+    pub id: String,
+    pub name: String,
+    pub color: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub command: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -124,6 +136,11 @@ impl Default for Settings {
             pill_colors: BTreeMap::new(),
             language: String::new(),
             desktop_mochi: DesktopMochiPref::default(),
+            custom_agents: vec![
+                CustomAgentPref { id: "zai".into(), name: "ZAI".into(), color: "#1E88E5".into(), command: None },
+                CustomAgentPref { id: "manus".into(), name: "Manus".into(), color: "#FF6B00".into(), command: None },
+                CustomAgentPref { id: "minimax".into(), name: "MiniMax".into(), color: "#7C3AED".into(), command: None },
+            ],
         }
     }
 }
