@@ -12,7 +12,7 @@ import {
 import { DEFAULT_SETTINGS, type Settings } from "../core/state";
 import { SOUND_NAMES } from "../core/sound";
 import {
-  MAX_DECLARED, PILL_CATEGORIES, availablePills, chooseMainPill, isComingSoon, mainPillChoices,
+  MAX_DECLARED, activePillGroups, availablePills, chooseMainPill, isComingSoon, mainPillChoices,
   sanitizeDeclared, setCustomAgents, toggleDeclared, type PillDefinition,
 } from "../core/pills";
 import { h, clear } from "../views/dom";
@@ -464,11 +464,8 @@ function activePillsSection(connected: Record<string, boolean>): HTMLElement {
     slots.classList.toggle("full", used >= MAX_ACTIVE);
     main.value = settings.mainPill;
     clear(groups);
-    for (const cat of PILL_CATEGORIES) {
-      if (cat.id === "service") continue;
-      const pills = availablePills().filter((p) => p.category === cat.id);
-      if (pills.length === 0) continue;
-      groups.append(h("div", { class: "pill-group" }, h("h3", { text: t(cat.title) }), ...pills.map(row)));
+    for (const group of activePillGroups()) {
+      groups.append(h("div", { class: "pill-group" }, h("h3", { text: t(group.title) }), ...group.pills.map(row)));
     }
   }
   declaredViews.push(draw);

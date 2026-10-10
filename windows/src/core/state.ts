@@ -112,7 +112,7 @@ export interface Settings {
   /** Hovering the island opens it all the way (off: hovering only peeks). */
   openOnHover: boolean;
   absenceInterval: number;
-  /** Declared pills next to the main one (at most 4), in the order they were added. */
+  /** Declared pills next to the main one (at most 5), in the order they were added. */
   activeIntegrations: string[];
   /** The always-on workspace pill: VS Code, Cursor, Codex or Antigravity. */
   mainPill: string;

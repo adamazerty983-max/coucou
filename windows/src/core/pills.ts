@@ -188,6 +188,24 @@ export function availablePills(os: HostOs = HOST_OS): PillDefinition[] {
   return [...PILL_CATALOG.filter((p) => offeredOn(p, os)), ...customPills];
 }
 
+/** The groups shown in Settings → Active pills, in the order they are rendered. */
+export interface ActivePillGroup {
+  id: PillCategory;
+  title: string;
+  pills: PillDefinition[];
+}
+
+export function activePillGroups(os: HostOs = HOST_OS): ActivePillGroup[] {
+  const offered = availablePills(os);
+  return PILL_CATEGORIES
+    .filter(({ id }) => id !== "service")
+    .map((category) => ({
+      ...category,
+      pills: offered.filter((pill) => pill.category === category.id),
+    }))
+    .filter((group) => group.pills.length > 0);
+}
+
 export function isComingSoon(id: string): boolean {
   return pillDefinition(id)?.support === "soon";
 }

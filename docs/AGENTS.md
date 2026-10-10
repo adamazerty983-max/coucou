@@ -101,7 +101,9 @@ A catalog pill that is not checked in Settings behaves like any other agent: it 
 
 The GitHub build exposes Gemini CLI (`agent_gemini`), Antigravity (`agent_antigravity`),
 GitHub Copilot CLI (`agent_copilot`), Muse Code (`agent_muse`), OpenCode (`agent_opencode`),
-Amp (`agent_amp`) and Hermes (`agent_hermes`) in Settings → Active pills. Cursor (`agent_cursor`) and Codex
+Amp (`agent_amp`), Hermes (`agent_hermes`), Z Code (`agent_zcode`), Manus (`agent_manus`)
+and MiniMax (`agent_minimax`) in Settings → Active pills. The list allows five declared pills
+beside the main tool. Cursor (`agent_cursor`) and Codex
 (`agent_codex`, GitHub build only) are there too — their pills can be declared and set as
 the main pill; session support is coming in a future version.
 

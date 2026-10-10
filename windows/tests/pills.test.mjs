@@ -3,7 +3,7 @@
 import { beforeEach, test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  DEFAULT_MAIN_PILL, MAX_DECLARED, PILL_CATALOG, PILL_CATEGORIES, availablePills, chooseMainPill,
+  DEFAULT_MAIN_PILL, MAX_DECLARED, PILL_CATALOG, PILL_CATEGORIES, activePillGroups, availablePills, chooseMainPill,
   isComingSoon, isHookPill, mainPillChoices, orderPills, pillDefinition, sanitizeDeclared, sessionSubtitle,
   setCustomAgents, toggleDeclared,
 } from "../src/core/pills.ts";
@@ -113,6 +113,24 @@ test("the default settings offer Manus, MiniMax and Z Code as agent pills", () =
     assert.equal(pill?.connect.kind, "hooks");
   }
   assert.deepEqual(DEFAULT_SETTINGS.pillOutfits, {});
+});
+
+test("Active pills renders Z Code, Manus and MiniMax in the Agents group", () => {
+  setCustomAgents(DEFAULT_SETTINGS.customAgents ?? []);
+  const agents = activePillGroups("windows").find((group) => group.id === "agent");
+  assert.ok(agents, "the Agents group is rendered");
+  assert.deepEqual(
+    agents.pills.filter((pill) => ["agent_zcode", "agent_manus", "agent_minimax"].includes(pill.id))
+      .map(({ id, name }) => [id, name]),
+    [["agent_zcode", "Z Code"], ["agent_manus", "Manus"], ["agent_minimax", "MiniMax"]],
+  );
+
+  let active = [];
+  for (const id of ["agent_zcode", "agent_manus", "agent_minimax"]) {
+    active = toggleDeclared({ mainPill: DEFAULT_MAIN_PILL, activeIntegrations: active }, id, "windows");
+  }
+  assert.deepEqual(active, ["agent_zcode", "agent_manus", "agent_minimax"]);
+  assert.equal(MAX_DECLARED, 5);
 });
 
 test("this build leaves out what only macOS has, Claude Desktop on Linux and Spotify on Windows", () => {
