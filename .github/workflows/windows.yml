@@ -115,12 +115,13 @@ jobs:
           retention-days: 3
 
       - name: Publish the release
-        if: env.PUBLISH == 'true' && startsWith(github.ref, 'refs/tags/windows-v')
+        if: env.PUBLISH == 'true' && (startsWith(github.ref, 'refs/tags/windows-v') || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           $v = "${{ steps.pack.outputs.version }}"
+          $tag = if ("${{ github.ref_name }}".StartsWith("windows-v")) { "${{ github.ref_name }}" } else { "windows-v$v" }
           $notes = @"
           Coucou for Windows $v — Mochi at the top of your screen.
 
@@ -128,19 +129,20 @@ jobs:
           code-signed yet, so Windows SmartScreen shows a warning: click
           **More info → Run anyway**.
           "@
-          # --latest=false is not cosmetic: without it GitHub hands "Latest" to
-          # whichever release was published last, and the site's Download for Mac
-          # button points at /releases/latest. A Windows tag would silently send
-          # Mac users to the .exe. The macOS `v*` releases own that slot.
-          gh release create "${{ github.ref_name }}" `
-            "release/Coucou-Windows-$v-setup.exe" `
-            "release/Coucou-Windows-$v.msi" `
-            --title "Coucou for Windows $v" `
-            --notes $notes `
-            --latest=false
+          $exists = gh release view $tag 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag "release/Coucou-Windows-$v-setup.exe" "release/Coucou-Windows-$v.msi" --clobber
+          } else {
+            gh release create $tag `
+              "release/Coucou-Windows-$v-setup.exe" `
+              "release/Coucou-Windows-$v.msi" `
+              --title "Coucou for Windows $v" `
+              --notes $notes `
+              --latest=false
+          }
 
       - name: Update the rolling windows-latest release
-        if: env.PUBLISH == 'true' && startsWith(github.ref, 'refs/tags/windows-v')
+        if: env.PUBLISH == 'true'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
@@ -148,9 +150,6 @@ jobs:
           $v = "${{ steps.pack.outputs.version }}"
           $exists = gh release view windows-latest 2>$null
           if ($LASTEXITCODE -eq 0) {
-            # The tag has to follow the release, or windows-latest keeps pointing
-            # at the first commit it was ever created from and anyone building
-            # from it gets an old tree.
             git tag -f windows-latest "${{ github.sha }}"
             git push -f origin windows-latest
             gh release edit windows-latest --title "Coucou for Windows (latest)" --notes "Always the newest Windows build — currently $v."
