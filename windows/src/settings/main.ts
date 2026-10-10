@@ -17,7 +17,7 @@ import {
 } from "../core/pills";
 import { h, clear } from "../views/dom";
 import { agentsSection } from "./agents";
-import { customAgentsSection } from "./custom_agents";
+import { customAgentsSection, ensureBuiltinAgents } from "./custom_agents";
 import { colorDot } from "./colors";
 import { renderDiff, statusDot } from "./parts";
 import {
@@ -1307,6 +1307,7 @@ async function main() {
   void onEvent<Settings>("settings-changed", (s) => {
     const before = `${settings.chatProvider}|${settings.ollamaUrl}|${settings.lmstudioUrl}|${settings.customUrl}`;
     settings = { ...settings, ...s };
+    ensureBuiltinAgents(settings);
     setCustomAgents(settings.customAgents ?? []);
     shortcutsListener?.settingsChanged();
     for (const redraw of declaredViews) redraw();
@@ -1320,7 +1321,10 @@ async function main() {
 async function render() {
   // The settings window has its own webview and its own pill registry. Load the
   // saved custom agents before sanitizing declarations or drawing Active pills.
+  const addedBuiltinAgents = ensureBuiltinAgents(settings);
+  settings.pillOutfits ??= {};
   setCustomAgents(settings.customAgents ?? []);
+  if (addedBuiltinAgents) await save();
 
   const status = (await Bridge.hooksStatus()) ?? {
     installed: false, planRelayInstalled: false, settingsPath: "", hookPath: "", hookReady: false,

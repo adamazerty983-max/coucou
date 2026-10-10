@@ -62,6 +62,8 @@ pub struct Settings {
     /// Kept as it comes, like `mochi_outfit`: src/core/pill-colors.ts reads
     /// whatever is not a colour as "no choice".
     pub pill_colors: BTreeMap<String, String>,
+    /// Per-agent Mochi accessory, keyed by pill ID. Unknown values are ignored by the UI.
+    pub pill_outfits: BTreeMap<String, String>,
     /// Interface language: "" follows the system, else one of i18n::LANGUAGES
     /// ("fr", "pt-BR", "zh-Hans"…). Kept as it comes, like `mochi_outfit`: a
     /// code this build doesn't know reads as "".
@@ -134,12 +136,14 @@ impl Default for Settings {
             shortcuts: Default::default(),
             mochi_outfit: "auto".into(),
             pill_colors: BTreeMap::new(),
+            pill_outfits: BTreeMap::new(),
             language: String::new(),
             desktop_mochi: DesktopMochiPref::default(),
             custom_agents: vec![
                 CustomAgentPref { id: "zai".into(), name: "ZAI".into(), color: "#1E88E5".into(), command: None },
                 CustomAgentPref { id: "manus".into(), name: "Manus".into(), color: "#FF6B00".into(), command: None },
                 CustomAgentPref { id: "minimax".into(), name: "MiniMax".into(), color: "#7C3AED".into(), command: None },
+                CustomAgentPref { id: "zcode".into(), name: "Z Code".into(), color: "#13B8A6".into(), command: None },
             ],
         }
     }
@@ -199,7 +203,15 @@ fn parse(bytes: &[u8]) -> Option<Settings> {
         return None;
     };
     let whole = serde_json::from_value(Value::Object(fields.clone()));
-    Some(whole.unwrap_or_else(|_| salvage(fields)))
+    let mut settings = whole.unwrap_or_else(|_| salvage(fields));
+    // Older settings files have a complete customAgents list, so serde's
+    // struct defaults cannot add newer built-in integrations to that list.
+    for builtin in Settings::default().custom_agents {
+        if !settings.custom_agents.iter().any(|agent| agent.id == builtin.id) {
+            settings.custom_agents.push(builtin);
+        }
+    }
+    Some(settings)
 }
 
 /// Settings from the fields of a settings.json that does not load as a whole.
@@ -410,12 +422,19 @@ mod tests {
   "showCodexPlanInNotch": true,
   "chatProvider": "ollama",
   "chatModels": { "ollama": "llama3.2", "openai": "gpt-x" },
+  "customAgents": [
+    { "id": "zai", "name": "ZAI", "color": "#1E88E5" },
+    { "id": "manus", "name": "Manus", "color": "#FF6B00" },
+    { "id": "minimax", "name": "MiniMax", "color": "#7C3AED" },
+    { "id": "zcode", "name": "Z Code", "color": "#13B8A6" }
+  ],
   "ollamaUrl": "http://127.0.0.1:11434",
   "lmstudioUrl": "http://127.0.0.1:1234",
   "customUrl": "https://llm.example.com",
   "shortcuts": { "openChat": { "keys": "Ctrl+Shift+K", "enabled": false } },
   "mochiOutfit": "witchHat",
   "pillColors": { "integration_claude": "#2DD4BF" },
+  "pillOutfits": {},
   "language": "pt-BR",
   "desktopMochi": { "onDesktop": true, "spot": { "x": 1500.5, "y": -300.0, "space": "screen" } }
 }"##;
@@ -819,8 +838,10 @@ mod tests {
                 "shortcuts",
                 "mochiOutfit",
                 "pillColors",
+                "pillOutfits",
                 "language",
                 "desktopMochi",
+                "customAgents",
             ]
         );
         let _ = std::fs::remove_dir_all(&dir);

@@ -95,6 +95,17 @@ test("saved custom agents are offered as hook pills and can be declared", () => 
   }
 });
 
+test("the default settings offer Manus, MiniMax and Z Code as agent pills", () => {
+  setCustomAgents(DEFAULT_SETTINGS.customAgents ?? []);
+  for (const [id, name] of [["manus", "Manus"], ["minimax", "MiniMax"], ["zcode", "Z Code"]]) {
+    const pill = pillDefinition(`agent_${id}`);
+    assert.equal(pill?.name, name);
+    assert.equal(pill?.category, "agent");
+    assert.equal(pill?.connect.kind, "hooks");
+  }
+  assert.deepEqual(DEFAULT_SETTINGS.pillOutfits, {});
+});
+
 test("this build leaves out what only macOS has, Claude Desktop on Linux and Spotify on Windows", () => {
   const windows = availablePills("windows").map((p) => p.id);
   const linux = availablePills("linux").map((p) => p.id);

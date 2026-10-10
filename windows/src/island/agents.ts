@@ -21,6 +21,7 @@ export const KNOWN_AGENTS: Record<string, KnownAgent> = {
   zai: { name: "ZAI", color: "#1E88E5" },
   manus: { name: "Manus", color: "#FF6B00" },
   minimax: { name: "MiniMax", color: "#7C3AED" },
+  zcode: { name: "Z Code", color: "#13B8A6" },
 };
 
 /** Registers or updates a custom agent at runtime. */

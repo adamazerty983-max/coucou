@@ -2168,6 +2168,17 @@
    "ru": "Начните новую сессию Muse Code, чтобы хуки заработали.",
    "id": "Mulai sesi Muse Code baru agar hooks dimuat."
   },
+  "Start a new Z Code session to pick the hooks up.": {
+   "zh-Hans": "开启新的 Z Code 会话即可启用 hooks。",
+   "hi": "hooks लागू करने के लिए Z Code का नया सत्र शुरू करें।",
+   "es": "Abre una nueva sesión de Z Code para que cargue los hooks.",
+   "ar": "ابدأ جلسة Z Code جديدة لتفعيل الـ hooks.",
+   "fr": "Lance une nouvelle session Z Code pour qu'elle prenne les hooks.",
+   "bn": "hooks চালু করতে Z Code-এর নতুন সেশন শুরু করুন।",
+   "pt-BR": "Inicie uma nova sessão do Z Code para carregar os hooks.",
+   "ru": "Начните новую сессию Z Code, чтобы хуки заработали.",
+   "id": "Mulai sesi Z Code baru agar hooks dimuat."
+  },
   "Start a new chat": {
    "zh-Hans": "开始新聊天",
    "hi": "नई चैट शुरू करें",

@@ -5,6 +5,7 @@ import { t } from "../i18n/i18n";
 import { type CustomAgent, type Settings } from "../core/state";
 import { registerCustomAgent, validateAgent } from "../island/agents";
 import { setCustomAgents } from "../core/pills";
+import { OUTFIT_LABELS, OUTFIT_SELECTIONS, type OutfitSelection } from "../mochi/wardrobe";
 
 const PRESET_COLORS = [
   "#1E88E5", // Blue (ZAI)
@@ -17,18 +18,29 @@ const PRESET_COLORS = [
   "#8B5CF6", // Violet
 ];
 
+const BUILTIN_AGENTS: CustomAgent[] = [
+  { id: "zai", name: "ZAI", color: "#1E88E5" },
+  { id: "manus", name: "Manus", color: "#FF6B00" },
+  { id: "minimax", name: "MiniMax", color: "#7C3AED" },
+  { id: "zcode", name: "Z Code", color: "#13B8A6" },
+];
+
+/** Add the built-in integrations to settings created by older app versions. */
+export function ensureBuiltinAgents(settings: Settings): boolean {
+  const existing = new Set((settings.customAgents ?? []).map((agent) => agent.id));
+  const missing = BUILTIN_AGENTS.filter((agent) => !existing.has(agent.id));
+  if (!missing.length) return false;
+  settings.customAgents = [...(settings.customAgents ?? []), ...missing];
+  return true;
+}
+
 export function customAgentsSection(
   settings: Settings,
   save: () => Promise<void>,
   onChanged: () => void,
 ): HTMLElement {
-  if (!settings.customAgents) {
-    settings.customAgents = [
-      { id: "zai", name: "ZAI", color: "#1E88E5" },
-      { id: "manus", name: "Manus", color: "#FF6B00" },
-      { id: "minimax", name: "MiniMax", color: "#7C3AED" },
-    ];
-  }
+  ensureBuiltinAgents(settings);
+  settings.pillOutfits ??= {};
 
   const listContainer = h("div", { style: "display:flex;flex-direction:column;gap:10px" });
   const noticeContainer = h("div", {});
@@ -149,6 +161,20 @@ export function customAgentsSection(
 
     for (const agent of agents) {
       const isDeclared = settings.activeIntegrations.includes(`agent_${agent.id}`);
+      const outfit = settings.pillOutfits[`agent_${agent.id}`] ?? "none";
+      const outfitSelect = h("select", {
+        "aria-label": `${agent.name} Mochi appearance`,
+        style: "min-width:130px;padding:4px 8px;border-radius:6px;border:1px solid var(--hairline);background:var(--panel);color:var(--ink);font-size:11px",
+        onchange: async (event: Event) => {
+          const value = (event.currentTarget as HTMLSelectElement).value as OutfitSelection;
+          settings.pillOutfits[`agent_${agent.id}`] = value;
+          await save();
+        },
+      }) as HTMLSelectElement;
+      for (const selection of OUTFIT_SELECTIONS.filter((value) => value !== "auto")) {
+        outfitSelect.append(h("option", { value: selection, text: OUTFIT_LABELS[selection] }));
+      }
+      outfitSelect.value = OUTFIT_SELECTIONS.includes(outfit as OutfitSelection) && outfit !== "auto" ? outfit : "none";
       const row = h(
         "div",
         {
@@ -164,6 +190,7 @@ export function customAgentsSection(
           }),
           h("span", { style: "font-weight:600;font-size:13px", text: agent.name }),
           h("span", { style: "color:var(--dim-2);font-size:11px", text: `(${agent.id})` }),
+        outfitSelect,
         ),
         // Hook command snippet
         h(
@@ -205,7 +232,7 @@ export function customAgentsSection(
           },
         }),
         // Delete button
-        h("button", {
+        ...(BUILTIN_AGENTS.some((builtin) => builtin.id === agent.id) ? [] : [h("button", {
           class: "danger",
           style: "font-size:11px;padding:3px 8px",
           text: "Delete",
@@ -218,7 +245,7 @@ export function customAgentsSection(
             drawList();
             onChanged();
           },
-        }),
+        })]),
       );
       listContainer.append(row);
     }
@@ -232,7 +259,7 @@ export function customAgentsSection(
     h("h2", {}, h("span", { text: "Custom AI Agents & Models" })),
     h("div", {
       class: "hint",
-      text: "Add any AI agent or model (e.g. Manus, ZAI, MiniMax, or any agent on your Desktop). Coucou monitors their session live in the island and notifies you when they finish.",
+      text: "Add an agent pill, choose its Mochi color and look, and connect lifecycle events for live task progress. Z Code has managed hook setup; other agents need a compatible local hook or event bridge.",
     }),
     noticeContainer,
     listContainer,

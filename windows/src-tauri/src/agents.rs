@@ -101,6 +101,7 @@ pub enum Agent {
     OpenCode,
     Amp,
     Hermes,
+    ZCode,
 }
 
 impl Agent {
@@ -114,6 +115,7 @@ impl Agent {
         Agent::OpenCode,
         Agent::Amp,
         Agent::Hermes,
+        Agent::ZCode,
     ];
 
     /// The `--agent` name; the pill is `agent_<id>` (PillCatalog.swift).
@@ -128,6 +130,7 @@ impl Agent {
             Agent::OpenCode => "opencode",
             Agent::Amp => "amp",
             Agent::Hermes => "hermes",
+            Agent::ZCode => "zcode",
         }
     }
 
@@ -151,6 +154,7 @@ impl Agent {
                 let dir = home.join(".hermes").join("plugins").join("coucou");
                 vec![dir.join("__init__.py"), dir.join("plugin.yaml")]
             }
+            Agent::ZCode => vec![home.join(".zcode").join("cli").join("config.json")],
         }
     }
 
@@ -229,6 +233,11 @@ impl Agent {
                     .collect();
                 Box::new(move |v| muse_install(v, &commands).map(Some))
             }
+            (Agent::ZCode, false) => Box::new(|v| zcode_install(v, None).map(Some)),
+            (Agent::ZCode, true) => {
+                let command = relay.exe.clone();
+                Box::new(move |v| zcode_install(v, Some(&command)).map(Some))
+            }
             // Plugins are whole files (see `plugin`), never merged into JSON.
             (Agent::OpenCode | Agent::Amp | Agent::Hermes, _) => {
                 Box::new(|_| Err(crate::i18n::t("This agent takes a plugin, not hook entries.")))
@@ -260,6 +269,7 @@ impl Agent {
                 .and_then(Value::as_object)
                 .is_some_and(|h| h.values().filter_map(Value::as_array).flatten().any(copilot_entry_is_ours)),
             Agent::Muse => groups_have_ours(&json(), "muse"),
+            Agent::ZCode => zcode_has_ours(&json()),
             Agent::OpenCode | Agent::Amp | Agent::Hermes => false,
         }
     }
@@ -287,6 +297,7 @@ impl Agent {
             Agent::OpenCode => "OpenCode",
             Agent::Amp => "Amp",
             Agent::Hermes => "Hermes Agent",
+            Agent::ZCode => "Z Code",
         }
     }
 
@@ -303,6 +314,7 @@ impl Agent {
             Agent::OpenCode => t("Restart OpenCode to load the plugin."),
             Agent::Amp => t("Restart Amp to load the plugin."),
             Agent::Hermes => t("Turn it on once with `hermes plugins enable coucou`, then start a new Hermes session."),
+            Agent::ZCode => t("Start a new Z Code session to pick the hooks up."),
         }
     }
 }
@@ -726,6 +738,75 @@ fn muse_install(root: &Value, commands: &[(String, String, u64)]) -> Result<Valu
     Ok(Value::Object(root))
 }
 
+// ── Z Code — ~/.zcode/cli/config.json ────────────────────────────────────────
+// Z Code wraps hooks as process executors inside hooks.events and snapshots
+// this configuration when a session starts. Its event payload already uses
+// the canonical event names and fields consumed by coucou-hook.
+
+const ZCODE_EVENTS: &[&str] = &[
+    "SessionStart", "UserPromptSubmit", "PreToolUse", "PermissionRequest",
+    "PostToolUse", "PostToolUseFailure", "Stop",
+];
+
+fn zcode_is_ours(hook: &Value) -> bool {
+    hook.get("command").and_then(Value::as_str).is_some_and(|s| s.contains(MARKER))
+        && hook.get("args").and_then(Value::as_array).is_some_and(|args| {
+            args.windows(2).any(|pair| {
+                pair[0].as_str() == Some("--agent") && pair[1].as_str() == Some("zcode")
+            })
+        })
+}
+
+fn zcode_without_ours(groups: &[Value]) -> Vec<Value> {
+    groups.iter().filter_map(|group| {
+        let Some(inner) = group.get("hooks").and_then(Value::as_array) else {
+            return Some(group.clone());
+        };
+        let kept: Vec<Value> = inner.iter().filter(|hook| !zcode_is_ours(hook)).cloned().collect();
+        if kept.len() == inner.len() { return Some(group.clone()); }
+        if kept.is_empty() { return None; }
+        let mut group = group.clone();
+        group["hooks"] = Value::Array(kept);
+        Some(group)
+    }).collect()
+}
+
+fn zcode_has_ours(root: &Value) -> bool {
+    root.get("hooks").and_then(Value::as_object)
+        .and_then(|hooks| hooks.get("events")).and_then(Value::as_object)
+        .is_some_and(|events| events.values().filter_map(Value::as_array).flatten()
+            .any(|group| group.get("hooks").and_then(Value::as_array)
+                .is_some_and(|hooks| hooks.iter().any(zcode_is_ours))))
+}
+
+fn zcode_install(root: &Value, command: Option<&str>) -> Result<Value, String> {
+    let mut root = root.as_object().cloned().unwrap_or_default();
+    let mut hooks = object_at(&root, "hooks")?;
+    let mut events = object_at(&hooks, "events")?;
+    for event in ZCODE_EVENTS {
+        let mut list = match events.get(*event) {
+            None => Vec::new(),
+            Some(Value::Array(list)) => list.clone(),
+            Some(_) => return Err(unexpected(&format!("\"hooks\".\"events\".\"{event}\""))),
+        };
+        list = zcode_without_ours(&list);
+        if let Some(command) = command {
+            list.push(json!({ "matcher": "*", "hooks": [{
+                "type": "process", "command": command, "args": ["--agent", "zcode"],
+                "enabled": true, "timeoutMs": 5000
+            }] }));
+        }
+        if list.is_empty() { events.remove(*event); }
+        else { events.insert((*event).to_string(), Value::Array(list)); }
+    }
+    if command.is_some() { hooks.insert("enabled".into(), json!(true)); }
+    if events.is_empty() { hooks.remove("events"); }
+    else { hooks.insert("events".into(), Value::Object(events)); }
+    if hooks.is_empty() { root.remove("hooks"); }
+    else { root.insert("hooks".into(), Value::Object(hooks)); }
+    Ok(Value::Object(root))
+}
+
 // ── Plugins: OpenCode, Amp, Hermes ────────────────────────────────────────────
 //
 // These agents load code rather than run hook commands. The Mac's plugins
@@ -1033,6 +1114,41 @@ mod tests {
         let once = gemini_install(&json!({}), &[("BeforeTool".into(), "'x/coucou-hook' --agent gemini PreToolUse".into(), 5000)]).unwrap();
         let twice = gemini_install(&once, &[("BeforeTool".into(), "'y/coucou-hook' --agent gemini PreToolUse".into(), 5000)]).unwrap();
         assert_eq!(twice["hooks"]["BeforeTool"].as_array().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn zcode_installs_process_hooks_and_preserves_foreign_config() {
+        let home = scratch("zcode-config");
+        let file = Agent::ZCode.files(&home)[0].clone();
+        let existing = json!({
+            "model": "GLM-5",
+            "hooks": { "enabled": false, "events": {
+                "Stop": [{ "matcher": "*", "hooks": [{ "type": "process", "command": "custom-hook" }] }]
+            } }
+        });
+        std::fs::create_dir_all(file.parent().unwrap()).unwrap();
+        std::fs::write(&file, serde_json::to_vec(&existing).unwrap()).unwrap();
+        let relay = linux();
+        let plan = config_file::preview(&Agent::ZCode.edits(&home, &relay, true)).unwrap();
+        apply_in(Agent::ZCode, &home, &relay, true, &plan.fingerprint).unwrap();
+        let installed = read_json(&file);
+        assert_eq!(installed["model"], "GLM-5");
+        assert_eq!(installed["hooks"]["enabled"], true);
+        let stop = installed["hooks"]["events"]["Stop"].as_array().unwrap();
+        assert_eq!(stop.len(), 2);
+        assert_eq!(stop[0]["hooks"][0]["command"], "custom-hook");
+        let ours = &stop[1]["hooks"][0];
+        assert_eq!(ours["type"], "process");
+        assert_eq!(ours["args"], json!(["--agent", "zcode"]));
+        assert!(Agent::ZCode.installed(&home));
+
+        let plan = config_file::preview(&Agent::ZCode.edits(&home, &relay, false)).unwrap();
+        apply_in(Agent::ZCode, &home, &relay, false, &plan.fingerprint).unwrap();
+        let removed = read_json(&file);
+        assert_eq!(removed["model"], "GLM-5");
+        assert_eq!(removed["hooks"]["enabled"], true);
+        assert_eq!(removed["hooks"]["events"]["Stop"][0]["hooks"][0]["command"], "custom-hook");
+        let _ = std::fs::remove_dir_all(home);
     }
 
     #[test]

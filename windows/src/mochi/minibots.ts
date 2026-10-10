@@ -3,6 +3,8 @@
 
 import { BotEngine, hexToRGB } from "./engine";
 import type { AgentTask } from "../core/state";
+import { State } from "../core/state";
+import { parseOutfit, resolveOutfit } from "./wardrobe";
 
 interface MiniBot {
   canvas: HTMLCanvasElement;
@@ -42,6 +44,8 @@ export function createMiniBot(task: AgentTask, bodySize: number, dancing?: () =>
   const engine = new BotEngine();
   engine.isMini = true;
   engine.bodyColor = hexToRGB(task.color);
+  const outfit = parseOutfit(State.settings.pillOutfits?.[task.id]);
+  engine.setOutfit(resolveOutfit(outfit, new Date()), false);
   engine.setState(task.state, true);
   if (task.emote) engine.setPermanentEmote(task.emote);
   if (task.miniEye) {
@@ -71,6 +75,9 @@ export function syncMiniBotStates(tasks: AgentTask[]) {
     if (!task) continue;
     mb.engine.setState(task.state);
     mb.engine.bodyColor = hexToRGB(task.color);
+    const outfit = parseOutfit(State.settings.pillOutfits?.[task.id]);
+    const resolved = resolveOutfit(outfit, new Date());
+    if (mb.engine.outfit !== resolved) mb.engine.setOutfit(resolved);
   }
 }
 

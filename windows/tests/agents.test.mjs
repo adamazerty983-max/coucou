@@ -13,6 +13,10 @@ test("known agents carry the Mac's names and colours", () => {
   assert.equal(agentName("copilot"), "Copilot CLI");
   assert.equal(agentColor("codex"), "#2DD4BF");
   assert.equal(agentColor("cursor"), "#C0C4CC");
+  assert.equal(agentName("zcode"), "Z Code");
+  assert.equal(agentColor("zcode"), "#13B8A6");
+  assert.equal(agentName("manus"), "Manus");
+  assert.equal(agentName("minimax"), "MiniMax");
   for (const [id, { color }] of Object.entries(KNOWN_AGENTS)) {
     assert.equal(validateAgent(id), id, id);
     assert.match(color, /^#[0-9A-F]{6}$/, id);

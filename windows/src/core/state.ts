@@ -149,6 +149,8 @@ export interface Settings {
    * Same key and values as the Mac's "pillColors".
    */
   pillColors: Record<string, string>;
+  /** Selected accessory for each agent Mochi; "none" leaves the mini bot plain. */
+  pillOutfits: Record<string, string>;
   /**
    * Interface language: "" follows the system (when Coucou has its language,
    * else English), or one of src/i18n's ten codes ("fr", "pt-BR", "zh-Hans"…).
@@ -188,11 +190,13 @@ export const DEFAULT_SETTINGS: Settings = {
   shortcuts: {},
   mochiOutfit: DEFAULT_OUTFIT,
   pillColors: {},
+  pillOutfits: {},
   language: "",
   customAgents: [
     { id: "zai", name: "ZAI", color: "#1E88E5" },
     { id: "manus", name: "Manus", color: "#FF6B00" },
     { id: "minimax", name: "MiniMax", color: "#7C3AED" },
+    { id: "zcode", name: "Z Code", color: "#13B8A6" },
   ],
 };
 
