@@ -25,6 +25,22 @@ Approve permissions, watch your agents work, drop a file, chat with Claude — a
 
 ---
 
+<div align="center">
+
+### 📥 تحميل تطبيق Coucou بالتعديلات الجديدة (Windows)
+> **تتضمن هذه النسخة المخصصة مدير الوكلاء المخصصين (Custom Agents)، دعم نماذج ZAI و Manus و MiniMax، والتنبيهات المباشرة عند انتهاء التعديلات.**
+
+| 💾 الملف | 🔗 رابط التحميل المباشر |
+| :--- | :--- |
+| **Windows Setup (.exe)** | [**تحميل Coucou-Windows-setup.exe**](https://github.com/adamazerty983-max/coucou/releases/download/windows-latest/Coucou-Windows-setup.exe) |
+| **Windows MSI Installer** | [**تحميل Coucou-Windows.msi**](https://github.com/adamazerty983-max/coucou/releases/download/windows-latest/Coucou-Windows.msi) |
+| **صفحة الإصدارات الكاملة** | [**Releases Page**](https://github.com/adamazerty983-max/coucou/releases) |
+| **حزم البناء التلقائية** | [**GitHub Actions Artifacts**](https://github.com/adamazerty983-max/coucou/actions) |
+
+</div>
+
+---
+
 ## Why
 
 Some studios showed off gorgeous notch companions… and never let anyone use them.
