@@ -131,9 +131,9 @@ answer on one line, still, until the next prompt.
 
 **Settings… → Active pills** lists the tools you use, from the same catalog as
 the Mac app. Pick your **main tool** — VS Code, Cursor, Codex or Antigravity —
-which is always there and doesn't take a slot, then declare up to four more:
-agents (Gemini CLI, Copilot CLI, Muse Code, OpenCode, Amp, Hermes, Claude
-Desktop), the chat providers (Anthropic, Google AI, OpenAI, Ollama, LM Studio),
+which is always there and doesn't take a slot, then declare up to five more:
+agents (Gemini CLI, Copilot CLI, Muse Code, OpenCode, Amp, Hermes, Z Code,
+Manus, MiniMax, Claude Desktop), the chat providers (Anthropic, Google AI, OpenAI, Ollama, LM Studio),
 and the services under **Integrations**. A pill fed by hooks says whether its
 hooks are installed, never asks for a key; a local model server's pill says
 whether the chat is connected to it. A session on a pill you didn't
@@ -364,6 +364,7 @@ Linux.
 | OpenCode | plugin `.config\opencode\plugins\coucou.js` | asked in OpenCode |
 | Amp | plugin `.config\amp\plugins\coucou.ts` | asked in Amp |
 | Hermes Agent | plugin `.hermes\plugins\coucou\` — then `hermes plugins enable coucou` once | asked in Hermes |
+| Z Code | `.zcode\cli\config.json` | displayed in the island |
 | Any other | run `coucou-hook --agent <name> [<Event>]` from your tool's hooks | asked in the tool |
 
 The relay maps every agent's event and field names onto Claude Code's (Gemini

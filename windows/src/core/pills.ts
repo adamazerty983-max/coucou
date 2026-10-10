@@ -95,6 +95,13 @@ export const PILL_CATALOG: readonly PillDefinition[] = [
     subtitle: N_("Agent"), source: "agent", support: "yes", connect: hooks },
   { id: "agent_hermes", name: "Hermes", color: "#C084FC", category: "agent",
     subtitle: N_("Agent"), source: "agent", support: "yes", connect: hooks },
+  // Built-in presets have stable IDs and stay visible with older settings files.
+  { id: "agent_zcode", name: "Z Code", color: "#13B8A6", category: "agent",
+    subtitle: N_("Agent"), source: "agent", support: "yes", connect: hooks },
+  { id: "agent_manus", name: "Manus", color: "#FF6B00", category: "agent",
+    subtitle: N_("Agent"), source: "agent", support: "yes", connect: hooks },
+  { id: "agent_minimax", name: "MiniMax", color: "#7C3AED", category: "agent",
+    subtitle: N_("Agent"), source: "agent", support: "yes", connect: hooks },
   // Claude Code sessions run from the Claude desktop app: the relay tags them
   // from CLAUDE_CODE_ENTRYPOINT, so there is nothing to install. The app has no
   // Linux build.
@@ -140,7 +147,7 @@ export const PILL_CATALOG: readonly PillDefinition[] = [
 export const DEFAULT_MAIN_PILL = "integration_claude";
 
 /** How many declared pills may sit next to the main one. */
-export const MAX_DECLARED = 4;
+export const MAX_DECLARED = 5;
 
 /** The OS this page runs on. Only the Windows webview says "Windows". */
 export const HOST_OS: HostOs =
@@ -155,7 +162,8 @@ export interface CustomAgentPill {
 }
 
 export function setCustomAgents(agents: CustomAgentPill[]) {
-  customPills = agents.map((a) => ({
+  const catalogIds = new Set(PILL_CATALOG.map((pill) => pill.id));
+  customPills = agents.filter((agent) => !catalogIds.has(`agent_${agent.id}`)).map((a) => ({
     id: `agent_${a.id}`,
     name: a.name,
     color: a.color,
@@ -236,7 +244,7 @@ export function sanitizeDeclared(d: Declared, os: HostOs = HOST_OS): Declared {
 /**
  * Declares or undeclares a pill. Returns the new list, or null when the click
  * changes nothing: the main pill is never toggled, an unknown pill never
- * declared, and a fifth pill never added.
+ * declared, and a sixth pill never added.
  */
 export function toggleDeclared(d: Declared, id: string, os: HostOs = HOST_OS): string[] | null {
   if (id === d.mainPill) return null;

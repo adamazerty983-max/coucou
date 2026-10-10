@@ -423,7 +423,10 @@ function activePillsSection(connected: Record<string, boolean>): HTMLElement {
   /** Why a pill would show nothing yet, as on the Mac's row. */
   function hint(def: PillDefinition): string | null {
     if (isComingSoon(def.id)) return t("Coming soon");
-    if (def.connect.kind === "hooks" && connected[def.id] === false) return t("Hooks not installed");
+    if (def.connect.kind === "hooks" && connected[def.id] !== true) {
+      const custom = settings.customAgents?.some((agent) => `agent_${agent.id}` === def.id);
+      return custom && connected[def.id] === undefined ? t("Manual hook required") : t("Hooks not installed");
+    }
     if (def.connect.kind === "key" && !connected[def.id]) return t("Key not configured");
     if (def.connect.kind === "server" && !settings[def.connect.field]) return t("Not connected");
     return null;
@@ -1370,7 +1373,7 @@ async function render() {
   root.append(
     h("h1", {}, h("span", { text: "Coucou" }), h("span", { class: "version", text: version })),
     claudeSection(status),
-    agentsSection(agents),
+    agentsSection(agents, settings.customAgents ?? [], status.hookPath),
     customAgentsSection(settings, save, declaredChanged),
     planSection(status),
     apiSection(hasKey),

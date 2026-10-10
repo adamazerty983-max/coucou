@@ -1,8 +1,9 @@
-// Settings → Agents: one section for every agent other than Claude Code, all
-// going through the same steps — preview the exact diff, click to confirm, and
-// only then does agents.rs back the file up and write it.
+// Settings → Agents: managed providers get a reviewed config installer; custom
+// providers get the relay command to add to a hook system they support.
 
 import { Bridge, type AgentHookStatus } from "../core/bridge";
+import { type CustomAgent } from "../core/state";
+import { HOST_OS } from "../core/pills";
 import { clear, h } from "../views/dom";
 import { renderDiff, statusDot } from "./parts";
 import { t } from "../i18n/i18n";
@@ -11,7 +12,7 @@ import { t } from "../i18n/i18n";
 const TEXT = {
   get title() { return t("Agents"); },
   get intro() {
-    return t("Show other coding agents in the island. Coucou adds its entries to each agent's own config: you see the exact change and where the backup goes before anything is written, and uninstalling removes only what Coucou added.");
+    return t("Managed agents show the exact config change and backup before installation. Custom agents can copy Coucou's relay command for a compatible hook system; Coucou does not edit their settings automatically.");
   },
   get none() { return t("Coucou could not list the agents."); },
   get approvals() { return t("Sessions, and Allow / Deny from the island"); },
@@ -20,6 +21,10 @@ const TEXT = {
   get reinstall() { return t("Reinstall…"); },
   get uninstall() { return t("Uninstall…"); },
   get relayMissing() { return t("The relay isn't installed yet. Restart Coucou."); },
+  get manualHook() { return t("Manual hook — add this command in the agent's own hook settings."); },
+  get copyHook() { return t("Copy hook command"); },
+  get hookCopied() { return t("Hook command copied."); },
+  get copyFailed() { return t("Could not copy the hook command."); },
   previewInstall: (name: string) => t("This is exactly what changes for {name}. Nothing else is touched.", { name }),
   get previewRemove() { return t("This removes Coucou's entries only. Everything else stays."); },
   backup: (to: string) => (to ? t("Backup → {path}", { path: to }) : t("No existing file — nothing to back up.")),
@@ -40,18 +45,60 @@ function errorText(err: unknown): string {
   return String(err).replace(/^Error:\s*/, "");
 }
 
-export function agentsSection(list: AgentHookStatus[] | null): HTMLElement {
+export function agentsSection(
+  list: AgentHookStatus[] | null,
+  customAgents: CustomAgent[] = [],
+  hookPath = "",
+): HTMLElement {
   const blocks = h("div", { style: "display:flex;flex-direction:column;gap:14px" });
   if (!list || list.length === 0) {
     blocks.append(h("div", { class: "hint", text: TEXT.none }));
   }
   for (const status of list ?? []) blocks.append(agentBlock(status));
+  const managed = new Set((list ?? []).map((status) => status.id));
+  for (const agent of customAgents) {
+    if (!managed.has(agent.id)) blocks.append(manualAgentBlock(agent, hookPath));
+  }
   return h(
     "section",
     {},
     h("h2", {}, h("span", { text: TEXT.title })),
     h("div", { class: "hint", text: TEXT.intro }),
     blocks,
+  );
+}
+
+/** Custom providers have no managed config format; offer the relay command and
+ * let the user add it to a provider hook configuration that supports commands. */
+function manualAgentBlock(agent: CustomAgent, hookPath: string): HTMLElement {
+  const command = hookPath ? HOST_OS === "windows"
+    ? `& '${hookPath.replace(/'/g, "''")}' --agent ${agent.id}`
+    : `'${hookPath.replace(/'/g, "'\\''")}' --agent ${agent.id}` : "";
+  const copy = h("button", {
+    text: TEXT.copyHook,
+    disabled: !hookPath,
+    title: hookPath ? "" : TEXT.relayMissing,
+    onclick: async () => {
+      try {
+        await navigator.clipboard.writeText(command);
+        copy.textContent = TEXT.hookCopied;
+      } catch {
+        copy.textContent = TEXT.copyFailed;
+      }
+    },
+  });
+  return h(
+    "div",
+    { style: "display:flex;flex-direction:column;gap:8px" },
+    h("div", { class: "row" },
+      h("div", { style: "display:flex;align-items:center;gap:8px;min-width:132px" },
+        h("span", { style: "font-size:12.5px", text: agent.name }),
+      ),
+      h("span", { class: "hint", text: TEXT.manualHook }),
+      h("span", { class: "spacer" }),
+      copy,
+    ),
+    h("span", { class: "path", text: command || TEXT.relayMissing }),
   );
 }
 

@@ -4,7 +4,7 @@ import { clear, h } from "../views/dom";
 import { t } from "../i18n/i18n";
 import { type CustomAgent, type Settings } from "../core/state";
 import { registerCustomAgent, validateAgent } from "../island/agents";
-import { setCustomAgents } from "../core/pills";
+import { MAX_DECLARED, setCustomAgents } from "../core/pills";
 import { OUTFIT_LABELS, OUTFIT_SELECTIONS, type OutfitSelection } from "../mochi/wardrobe";
 
 const PRESET_COLORS = [
@@ -220,8 +220,8 @@ export function customAgentsSection(
             if (settings.activeIntegrations.includes(pillId)) {
               settings.activeIntegrations = settings.activeIntegrations.filter((x) => x !== pillId);
             } else {
-              if (settings.activeIntegrations.length >= 4) {
-                showNotice("Maximum 4 active pills slots used. Remove another pill first.", true);
+              if (settings.activeIntegrations.length >= MAX_DECLARED) {
+                showNotice(`Maximum ${MAX_DECLARED} active pills slots used. Remove another pill first.`, true);
                 return;
               }
               settings.activeIntegrations.push(pillId);
