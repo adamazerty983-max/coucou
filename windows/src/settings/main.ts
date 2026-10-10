@@ -13,7 +13,7 @@ import { DEFAULT_SETTINGS, type Settings } from "../core/state";
 import { SOUND_NAMES } from "../core/sound";
 import {
   MAX_DECLARED, PILL_CATEGORIES, availablePills, chooseMainPill, isComingSoon, mainPillChoices,
-  sanitizeDeclared, toggleDeclared, type PillDefinition,
+  sanitizeDeclared, setCustomAgents, toggleDeclared, type PillDefinition,
 } from "../core/pills";
 import { h, clear } from "../views/dom";
 import { agentsSection } from "./agents";
@@ -423,7 +423,7 @@ function activePillsSection(connected: Record<string, boolean>): HTMLElement {
   /** Why a pill would show nothing yet, as on the Mac's row. */
   function hint(def: PillDefinition): string | null {
     if (isComingSoon(def.id)) return t("Coming soon");
-    if (def.connect.kind === "hooks" && !connected[def.id]) return t("Hooks not installed");
+    if (def.connect.kind === "hooks" && connected[def.id] === false) return t("Hooks not installed");
     if (def.connect.kind === "key" && !connected[def.id]) return t("Key not configured");
     if (def.connect.kind === "server" && !settings[def.connect.field]) return t("Not connected");
     return null;
@@ -1307,6 +1307,7 @@ async function main() {
   void onEvent<Settings>("settings-changed", (s) => {
     const before = `${settings.chatProvider}|${settings.ollamaUrl}|${settings.lmstudioUrl}|${settings.customUrl}`;
     settings = { ...settings, ...s };
+    setCustomAgents(settings.customAgents ?? []);
     shortcutsListener?.settingsChanged();
     for (const redraw of declaredViews) redraw();
     const after = `${settings.chatProvider}|${settings.ollamaUrl}|${settings.lmstudioUrl}|${settings.customUrl}`;
@@ -1317,6 +1318,10 @@ async function main() {
 
 /** Reads what the sections show and draws them all. */
 async function render() {
+  // The settings window has its own webview and its own pill registry. Load the
+  // saved custom agents before sanitizing declarations or drawing Active pills.
+  setCustomAgents(settings.customAgents ?? []);
+
   const status = (await Bridge.hooksStatus()) ?? {
     installed: false, planRelayInstalled: false, settingsPath: "", hookPath: "", hookReady: false,
   };

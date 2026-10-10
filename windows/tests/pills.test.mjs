@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import {
   DEFAULT_MAIN_PILL, MAX_DECLARED, PILL_CATALOG, PILL_CATEGORIES, availablePills, chooseMainPill,
   isComingSoon, isHookPill, mainPillChoices, orderPills, pillDefinition, sanitizeDeclared, sessionSubtitle,
-  toggleDeclared,
+  setCustomAgents, toggleDeclared,
 } from "../src/core/pills.ts";
 import { DEFAULT_SETTINGS, State } from "../src/core/state.ts";
 
@@ -71,6 +71,28 @@ test("the pills Windows always had keep their IDs, names, colours and sources", 
 test("IDs are unique", () => {
   const ids = PILL_CATALOG.map((p) => p.id);
   assert.equal(new Set(ids).size, ids.length);
+});
+
+test("saved custom agents are offered as hook pills and can be declared", () => {
+  setCustomAgents([{ id: "z-code", name: "Z Code", color: "#31C48D" }]);
+  try {
+    const def = pillDefinition("agent_z-code");
+    assert.deepEqual(
+      [def.name, def.color, def.category, def.connect.kind],
+      ["Z Code", "#31C48D", "agent", "hooks"],
+    );
+    assert.ok(availablePills("windows").some((p) => p.id === "agent_z-code"));
+    assert.deepEqual(
+      toggleDeclared({ mainPill: DEFAULT_MAIN_PILL, activeIntegrations: [] }, "agent_z-code", "windows"),
+      ["agent_z-code"],
+    );
+    assert.deepEqual(
+      sanitizeDeclared({ mainPill: DEFAULT_MAIN_PILL, activeIntegrations: ["agent_z-code"] }, "windows"),
+      { mainPill: DEFAULT_MAIN_PILL, activeIntegrations: ["agent_z-code"] },
+    );
+  } finally {
+    setCustomAgents([]);
+  }
 });
 
 test("this build leaves out what only macOS has, Claude Desktop on Linux and Spotify on Windows", () => {

@@ -1,6 +1,6 @@
 # Custom AI Agents & Models in Coucou
 
-Coucou allows adding any AI agent, local model, or desktop script directly from **Settings → Custom AI Agents & Models**.
+Coucou allows adding any AI agent, local model, or desktop script directly from **Settings → Custom AI Agents & Models**. This creates a pill and a hook command; it does not install an integration into the agent automatically. The agent or a wrapper must send compatible events to `coucou-hook.exe --agent <id>` while the session runs.
 
 Out of the box, preset support is included for:
 - **ZAI (Zhipu AI / GLM)** (`agent_zai` / `--agent zai`, color: `#1E88E5`)
