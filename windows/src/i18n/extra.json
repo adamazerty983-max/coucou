@@ -3448,6 +3448,5 @@
   "Restart MiniMax Code. Coucou reads its terminal title to show when it is working; detailed tool steps are not available.": {
    "zh-Hans": "重启 MiniMax Code。Coucou 读取终端标题来显示其工作状态；目前无法显示详细工具步骤。", "hi": "MiniMax Code को फिर से शुरू करें। Coucou काम की स्थिति दिखाने के लिए उसका टर्मिनल शीर्षक पढ़ता है; विस्तृत टूल चरण उपलब्ध नहीं हैं।", "es": "Reinicia MiniMax Code. Coucou lee el título del terminal para mostrar cuándo trabaja; no hay pasos detallados de herramientas.", "ar": "أعِد تشغيل MiniMax Code. يقرأ Coucou عنوان الطرفية لعرض حالة العمل؛ ولا تتوفر خطوات الأدوات التفصيلية.", "fr": "Redémarrez MiniMax Code. Coucou lit le titre du terminal pour afficher l'activité ; les étapes détaillées des outils ne sont pas disponibles.", "bn": "MiniMax Code পুনরায় চালু করুন। কাজের অবস্থা দেখাতে Coucou এর টার্মিনাল শিরোনাম পড়ে; বিস্তারিত টুল ধাপ পাওয়া যায় না।", "pt-BR": "Reinicie o MiniMax Code. O Coucou lê o título do terminal para mostrar quando está trabalhando; etapas detalhadas das ferramentas não estão disponíveis.", "ru": "Перезапустите MiniMax Code. Coucou читает заголовок терминала, чтобы показывать работу; подробные шаги инструментов недоступны.", "id": "Mulai ulang MiniMax Code. Coucou membaca judul terminal untuk menampilkan status kerja; langkah alat terperinci tidak tersedia."
   }
-  }
  }
 }
