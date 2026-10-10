@@ -21,7 +21,7 @@ const PRESET_COLORS = [
 const BUILTIN_AGENTS: CustomAgent[] = [
   { id: "zai", name: "ZAI", color: "#1E88E5" },
   { id: "manus", name: "Manus", color: "#FF6B00" },
-  { id: "minimax", name: "MiniMax", color: "#7C3AED" },
+  { id: "minimax", name: "MiniMax Code", color: "#7C3AED" },
   { id: "zcode", name: "Z Code", color: "#13B8A6" },
 ];
 

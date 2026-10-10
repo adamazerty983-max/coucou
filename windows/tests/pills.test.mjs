@@ -43,7 +43,7 @@ test("the shared catalog matches the Mac, with Windows agent entries added", () 
   const windowsOnly = [
     ["agent_zcode", "Z Code", "#13B8A6", "agent", "Agent"],
     ["agent_manus", "Manus", "#FF6B00", "agent", "Agent"],
-    ["agent_minimax", "MiniMax", "#7C3AED", "agent", "Agent"],
+    ["agent_minimax", "MiniMax Code", "#7C3AED", "agent", "Agent"],
   ];
   const windowsOnlyIds = new Set(windowsOnly.map(([id]) => id));
   assert.deepEqual(
@@ -104,9 +104,9 @@ test("saved custom agents are offered as hook pills and can be declared", () => 
   }
 });
 
-test("the default settings offer Manus, MiniMax and Z Code as agent pills", () => {
+test("the default settings offer Manus, MiniMax Code and Z Code as agent pills", () => {
   setCustomAgents(DEFAULT_SETTINGS.customAgents ?? []);
-  for (const [id, name] of [["manus", "Manus"], ["minimax", "MiniMax"], ["zcode", "Z Code"]]) {
+  for (const [id, name] of [["manus", "Manus"], ["minimax", "MiniMax Code"], ["zcode", "Z Code"]]) {
     const pill = pillDefinition(`agent_${id}`);
     assert.equal(pill?.name, name);
     assert.equal(pill?.category, "agent");
@@ -115,14 +115,14 @@ test("the default settings offer Manus, MiniMax and Z Code as agent pills", () =
   assert.deepEqual(DEFAULT_SETTINGS.pillOutfits, {});
 });
 
-test("Active pills renders Z Code, Manus and MiniMax in the Agents group", () => {
+test("Active pills renders Z Code, Manus and MiniMax Code in the Agents group", () => {
   setCustomAgents(DEFAULT_SETTINGS.customAgents ?? []);
   const agents = activePillGroups("windows").find((group) => group.id === "agent");
   assert.ok(agents, "the Agents group is rendered");
   assert.deepEqual(
     agents.pills.filter((pill) => ["agent_zcode", "agent_manus", "agent_minimax"].includes(pill.id))
       .map(({ id, name }) => [id, name]),
-    [["agent_zcode", "Z Code"], ["agent_manus", "Manus"], ["agent_minimax", "MiniMax"]],
+    [["agent_zcode", "Z Code"], ["agent_manus", "Manus"], ["agent_minimax", "MiniMax Code"]],
   );
 
   let active = [];
