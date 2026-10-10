@@ -11,7 +11,7 @@ import { DEFAULT_SETTINGS, State } from "../src/core/state.ts";
 
 // ── The catalog itself ────────────────────────────────────────────────────────
 
-test("the catalog holds the Mac's pills, in the Mac's order, with the Mac's values", () => {
+test("the shared catalog matches the Mac, with Windows agent entries added", () => {
   // Copied from NotchBuddy/Sources/CoucouKit/PillCatalog.swift: an ID is a
   // contract value, and a colour or subtitle that drifts is a visible bug.
   const mac = [
@@ -24,7 +24,6 @@ test("the catalog holds the Mac's pills, in the Mac's order, with the Mac's valu
     ["agent_muse", "Muse Code", "#38BDF8", "agent", "Agent"],
     ["agent_opencode", "OpenCode", "#4ADE80", "agent", "Agent"],
     ["agent_amp", "Amp", "#F59E0B", "agent", "Agent"],
-    ["agent_hermes", "Hermes", "#C084FC", "agent", "Agent"],
     ["agent_claude-desktop", "Claude Desktop", "#D97757", "agent", "Agent"],
     ["ai_anthropic", "Anthropic", "#E07950", "ai", "Chat"],
     ["ai_google", "Google AI", "#4285F4", "ai", "Chat"],
@@ -41,9 +40,19 @@ test("the catalog holds the Mac's pills, in the Mac's order, with the Mac's valu
     ["integration_music", "Apple Music", "#FA2D48", "service", "Integration"],
     ["integration_spotify", "Spotify", "#1DB954", "service", "Integration"],
   ];
+  const windowsOnly = [
+    ["agent_zcode", "Z Code", "#13B8A6", "agent", "Agent"],
+    ["agent_manus", "Manus", "#FF6B00", "agent", "Agent"],
+    ["agent_minimax", "MiniMax", "#7C3AED", "agent", "Agent"],
+  ];
+  const windowsOnlyIds = new Set(windowsOnly.map(([id]) => id));
   assert.deepEqual(
-    PILL_CATALOG.map((p) => [p.id, p.name, p.color, p.category, p.subtitle]),
-    mac,
+    PILL_CATALOG.filter((p) => !windowsOnlyIds.has(p.id)).map((p) => [p.id, p.name, p.color, p.category, p.subtitle]),
+    [...mac.slice(0, 9), ["agent_hermes", "Hermes", "#C084FC", "agent", "Agent"], ...mac.slice(9)],
+  );
+  assert.deepEqual(
+    PILL_CATALOG.filter((p) => windowsOnlyIds.has(p.id)).map((p) => [p.id, p.name, p.color, p.category, p.subtitle]),
+    windowsOnly,
   );
   assert.deepEqual(PILL_CATEGORIES.map((c) => c.title), [
     "Where you code", "Agents", "AI for the chat", "Services",

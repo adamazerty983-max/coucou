@@ -12,7 +12,7 @@ import { t } from "../i18n/i18n";
 const TEXT = {
   get title() { return t("Agents"); },
   get intro() {
-    return t("Managed agents show the exact config change and backup before installation. Custom agents can copy Coucou's relay command for a compatible hook system; Coucou does not edit their settings automatically.");
+    return t("Managed agents show a config preview before setup. For others, copy Coucou's command into a compatible hook setting.");
   },
   get none() { return t("Coucou could not list the agents."); },
   get approvals() { return t("Sessions, and Allow / Deny from the island"); },

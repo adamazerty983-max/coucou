@@ -23,6 +23,72 @@
    "ru": "(сохранён)",
    "id": "(tersimpan)"
   },
+  "Managed agents show a config preview before setup. For others, copy Coucou's command into a compatible hook setting.": {
+   "zh-Hans": "受管理的代理会在设置前显示配置预览。其他代理可将 Coucou 命令复制到兼容的钩子设置中。",
+   "hi": "प्रबंधित एजेंट सेटअप से पहले कॉन्फ़िगरेशन का पूर्वावलोकन दिखाते हैं। अन्य एजेंटों के लिए, Coucou का कमांड संगत हुक सेटिंग में कॉपी करें।",
+   "es": "Los agentes administrados muestran una vista previa de la configuración antes de instalarlos. Para los demás, copia el comando de Coucou en una opción de hooks compatible.",
+   "ar": "تعرض الوكلاء المُدارة معاينة الإعداد قبل التثبيت. للوكلاء الآخرين، انسخ أمر Coucou إلى إعداد hooks متوافق.",
+   "fr": "Les agents gérés affichent un aperçu de configuration avant l’installation. Pour les autres, copiez la commande Coucou dans un paramètre de hooks compatible.",
+   "bn": "পরিচালিত এজেন্ট সেটআপের আগে কনফিগারেশন প্রিভিউ দেখায়। অন্য এজেন্টের জন্য, Coucou-এর কমান্ডটি সামঞ্জস্যপূর্ণ হুক সেটিংয়ে কপি করুন।",
+   "pt-BR": "Agentes gerenciados mostram uma prévia da configuração antes da instalação. Para os demais, copie o comando do Coucou em uma configuração de hooks compatível.",
+   "ru": "Для управляемых агентов перед настройкой показывается предварительный просмотр конфигурации. Для остальных скопируйте команду Coucou в совместимую настройку хуков.",
+   "id": "Agen terkelola menampilkan pratinjau konfigurasi sebelum penyiapan. Untuk agen lain, salin perintah Coucou ke pengaturan hook yang kompatibel."
+  },
+  "Manual hook — add this command in the agent's own hook settings.": {
+   "zh-Hans": "手动 hook — 将此命令添加到该代理自己的 hook 设置中。",
+   "hi": "मैन्युअल हुक — इस कमांड को एजेंट की अपनी हुक सेटिंग में जोड़ें।",
+   "es": "Hook manual: añade este comando en la configuración de hooks del agente.",
+   "ar": "Hook يدوي — أضف هذا الأمر إلى إعدادات الـhooks الخاصة بالوكيل.",
+   "fr": "Hook manuel — ajoutez cette commande dans les paramètres de hooks de l’agent.",
+   "bn": "ম্যানুয়াল হুক — এজেন্টের নিজস্ব হুক সেটিংয়ে এই কমান্ডটি যোগ করুন।",
+   "pt-BR": "Hook manual — adicione este comando às configurações de hooks do agente.",
+   "ru": "Ручной хук — добавьте эту команду в настройки хуков агента.",
+   "id": "Hook manual — tambahkan perintah ini di pengaturan hook milik agen."
+  },
+  "Copy hook command": {
+   "zh-Hans": "复制 hook 命令",
+   "hi": "हुक कमांड कॉपी करें",
+   "es": "Copiar comando de hook",
+   "ar": "نسخ أمر الـhook",
+   "fr": "Copier la commande du hook",
+   "bn": "হুক কমান্ড কপি করুন",
+   "pt-BR": "Copiar comando de hook",
+   "ru": "Копировать команду хука",
+   "id": "Salin perintah hook"
+  },
+  "Hook command copied.": {
+   "zh-Hans": "已复制 hook 命令。",
+   "hi": "हुक कमांड कॉपी हो गया।",
+   "es": "Comando de hook copiado.",
+   "ar": "تم نسخ أمر الـhook.",
+   "fr": "Commande du hook copiée.",
+   "bn": "হুক কমান্ড কপি করা হয়েছে।",
+   "pt-BR": "Comando de hook copiado.",
+   "ru": "Команда хука скопирована.",
+   "id": "Perintah hook disalin."
+  },
+  "Could not copy the hook command.": {
+   "zh-Hans": "无法复制 hook 命令。",
+   "hi": "हुक कमांड कॉपी नहीं हो सका।",
+   "es": "No se pudo copiar el comando de hook.",
+   "ar": "تعذر نسخ أمر الـhook.",
+   "fr": "Impossible de copier la commande du hook.",
+   "bn": "হুক কমান্ড কপি করা যায়নি।",
+   "pt-BR": "Não foi possível copiar o comando de hook.",
+   "ru": "Не удалось скопировать команду хука.",
+   "id": "Perintah hook tidak dapat disalin."
+  },
+  "Manual hook required": {
+   "zh-Hans": "必须手动配置 hook",
+   "hi": "हुक को मैन्युअल रूप से सेट करना होगा",
+   "es": "Se requiere configurar el hook manualmente",
+   "ar": "يلزم إعداد الـhook يدويًا",
+   "fr": "Configuration manuelle du hook requise",
+   "bn": "হুক ম্যানুয়ালি সেটআপ করতে হবে",
+   "pt-BR": "É necessário configurar o hook manualmente",
+   "ru": "Требуется настроить хук вручную",
+   "id": "Hook harus disiapkan secara manual"
+  },
   "+ subagent": {
    "zh-Hans": "+ 子代理",
    "hi": "+ सब-एजेंट",
@@ -2090,17 +2156,6 @@
    "pt-BR": "Mostrar na pasta",
    "ru": "Показать в папке",
    "id": "Tampilkan di folder"
-  },
-  "Show other coding agents in the island. Coucou adds its entries to each agent's own config: you see the exact change and where the backup goes before anything is written, and uninstalling removes only what Coucou added.": {
-   "zh-Hans": "在岛中显示其他编程代理。Coucou 会把自己的条目添加到各代理的配置中：写入之前，你会看到确切的改动和备份位置；卸载只会移除 Coucou 添加的内容。",
-   "hi": "दूसरे कोडिंग एजेंटों को आइलैंड में दिखाएँ। Coucou हर एजेंट की अपनी कॉन्फ़िग में अपनी प्रविष्टियाँ जोड़ता है: कुछ भी लिखे जाने से पहले आप सटीक बदलाव और बैकअप की जगह देखते हैं, और अनइंस्टॉल करने पर केवल वही हटता है जो Coucou ने जोड़ा था।",
-   "es": "Muestra otros agentes de programación en la isla. Coucou añade sus entradas a la configuración de cada agente: ves el cambio exacto y dónde va la copia de seguridad antes de que se escriba nada, y al desinstalar solo se quita lo que añadió Coucou.",
-   "ar": "اعرض وكلاء البرمجة الآخرين في الشريط. يضيف Coucou إدخالاته إلى إعدادات كل وكيل: ترى التغيير بالضبط ومكان النسخة الاحتياطية قبل كتابة أي شيء، وإلغاء التثبيت يزيل فقط ما أضافه Coucou.",
-   "fr": "Affiche les autres agents de code dans l'île. Coucou ajoute ses entrées à la configuration de chaque agent : tu vois la modification exacte et l'emplacement de la sauvegarde avant que quoi que ce soit soit écrit, et la désinstallation ne retire que ce que Coucou a ajouté.",
-   "bn": "অন্যান্য কোডিং এজেন্টকে আইল্যান্ডে দেখান। Coucou প্রতিটি এজেন্টের নিজস্ব কনফিগে তার এন্ট্রি যোগ করে: কিছু লেখার আগে আপনি সঠিক পরিবর্তন এবং ব্যাকআপ কোথায় যাবে তা দেখতে পান, আর আনইনস্টল করলে শুধু Coucou যা যোগ করেছিল তা-ই সরানো হয়।",
-   "pt-BR": "Mostre outros agentes de programação na ilha. O Coucou adiciona as próprias entradas à configuração de cada agente: você vê a alteração exata e para onde vai o backup antes de qualquer gravação, e desinstalar remove só o que o Coucou adicionou.",
-   "ru": "Показывайте другие агенты для кода в острове. Coucou добавляет свои записи в конфигурацию каждого агента: до любой записи вы видите точное изменение и куда пойдёт резервная копия, а удаление убирает только то, что добавил Coucou.",
-   "id": "Tampilkan agen coding lain di pulau. Coucou menambahkan entrinya ke konfigurasi masing-masing agen: Anda melihat perubahan persisnya dan lokasi cadangan sebelum apa pun ditulis, dan mencopot pemasangan hanya menghapus yang ditambahkan Coucou."
   },
   "Shows your Claude plan usage (5-hour and weekly limits) in the island's header. Coucou adds a status line relay in ~/.claude/settings.json. If you already have a status line, it keeps working as before. Pro and Max plans only.": {
    "zh-Hans": "在岛的顶栏显示你的 Claude 套餐用量（5 小时和每周限额）。Coucou 会在 ~/.claude/settings.json 中添加一个状态栏中继。如果你已有状态栏，它会照常工作。仅限 Pro 和 Max 套餐。",
