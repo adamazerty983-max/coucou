@@ -20,7 +20,7 @@ export const KNOWN_AGENTS: Record<string, KnownAgent> = {
   "claude-desktop": { name: "Claude Desktop", color: "#D97757" },
   zai: { name: "ZAI", color: "#1E88E5" },
   manus: { name: "Manus", color: "#FF6B00" },
-  minimax: { name: "MiniMax", color: "#7C3AED" },
+  minimax: { name: "MiniMax Code", color: "#7C3AED" },
   zcode: { name: "Z Code", color: "#13B8A6" },
 };
 

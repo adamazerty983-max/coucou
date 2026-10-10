@@ -91,6 +91,8 @@ interface HookPayload {
   term_editor?: string;
   /** StatusLine (the plan usage relay): Claude Code's 5-hour and weekly limits. */
   rate_limits?: unknown;
+  /** MiniMax Code's configured native window title (coarse status only). */
+  title?: string;
 }
 
 const PROJECT_ALIASES: Record<string, string> = {
@@ -266,6 +268,24 @@ function handleHook(island: Island, payload: HookPayload) {
     // for a decision from an island that had already decided not to look. Say so,
     // and the terminal takes the question immediately.
     if (payload.request_id) void Bridge.approvalDecline(payload.request_id);
+    return;
+  }
+
+  // MiniMax Code does not currently expose hook callbacks. Its configured TUI
+  // title supplies a coarse active/idle signal; avoid inventing tool events.
+  if (payload.hook_event_name === "MiniMaxStatus") {
+    const id = "agent_minimax";
+    State.upsertExternalAgent(id, "MiniMax Code", agentColor("minimax"));
+    const task = State.tasks.find((x) => x.id === id);
+    const working = payload.message === "working";
+    if (task && task.state !== (working ? "working" : "idle")) {
+      State.updateTask(id, working ? "working" : "idle");
+      if (working && payload.title) {
+        const label = payload.title.split("|").slice(1, 2)[0]?.trim();
+        if (label) State.appendStep(id, label.slice(0, 60));
+      }
+    }
+    if (working && State.mode === "hidden") island.reveal();
     return;
   }
 

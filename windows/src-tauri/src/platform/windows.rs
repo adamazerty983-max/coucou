@@ -419,6 +419,16 @@ fn top_windows() -> Vec<(isize, u32, String)> {
     list
 }
 
+/// Visible MiniMax Code windows and their native terminal titles. MiniMax Code
+/// can include activity in that title when `tui.terminalTitle` is enabled.
+pub fn minimax_code_windows() -> Vec<(u32, String)> {
+    top_windows().into_iter().filter_map(|(_, pid, title)| {
+        let lower = title.to_lowercase();
+        (lower.contains("| mcode") || lower.contains("| minimax code"))
+            .then_some((pid, title))
+    }).collect()
+}
+
 /// The first of `pids` that owns a window.
 pub fn first_with_window(pids: &[u32]) -> Option<u32> {
     let windows = top_windows();

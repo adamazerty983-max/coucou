@@ -100,7 +100,7 @@ export const PILL_CATALOG: readonly PillDefinition[] = [
     subtitle: N_("Agent"), source: "agent", support: "yes", connect: hooks },
   { id: "agent_manus", name: "Manus", color: "#FF6B00", category: "agent",
     subtitle: N_("Agent"), source: "agent", support: "yes", connect: hooks },
-  { id: "agent_minimax", name: "MiniMax", color: "#7C3AED", category: "agent",
+  { id: "agent_minimax", name: "MiniMax Code", color: "#7C3AED", category: "agent",
     subtitle: N_("Agent"), source: "agent", support: "yes", connect: hooks },
   // Claude Code sessions run from the Claude desktop app: the relay tags them
   // from CLAUDE_CODE_ENTRYPOINT, so there is nothing to install. The app has no

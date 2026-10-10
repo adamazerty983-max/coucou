@@ -142,7 +142,7 @@ impl Default for Settings {
             custom_agents: vec![
                 CustomAgentPref { id: "zai".into(), name: "ZAI".into(), color: "#1E88E5".into(), command: None },
                 CustomAgentPref { id: "manus".into(), name: "Manus".into(), color: "#FF6B00".into(), command: None },
-                CustomAgentPref { id: "minimax".into(), name: "MiniMax".into(), color: "#7C3AED".into(), command: None },
+                CustomAgentPref { id: "minimax".into(), name: "MiniMax Code".into(), color: "#7C3AED".into(), command: None },
                 CustomAgentPref { id: "zcode".into(), name: "Z Code".into(), color: "#13B8A6".into(), command: None },
             ],
         }
@@ -425,7 +425,7 @@ mod tests {
   "customAgents": [
     { "id": "zai", "name": "ZAI", "color": "#1E88E5" },
     { "id": "manus", "name": "Manus", "color": "#FF6B00" },
-    { "id": "minimax", "name": "MiniMax", "color": "#7C3AED" },
+    { "id": "minimax", "name": "MiniMax Code", "color": "#7C3AED" },
     { "id": "zcode", "name": "Z Code", "color": "#13B8A6" }
   ],
   "ollamaUrl": "http://127.0.0.1:11434",

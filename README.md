@@ -28,7 +28,7 @@ Approve permissions, watch your agents work, drop a file, chat with Claude — a
 <div align="center">
 
 ### 📥 تحميل تطبيق Coucou بالتعديلات الجديدة (Windows)
-> **تتضمن هذه النسخة المخصصة مدير الوكلاء المخصصين (Custom Agents)، دعم نماذج ZAI و Manus و MiniMax، والتنبيهات المباشرة عند انتهاء التعديلات.**
+> **تتضمن هذه النسخة دعم MiniMax Code بمؤشر نشاط للبوت، إلى جانب مدير الوكلاء المخصصين (Custom Agents) ودعم ZAI وManus. روابط التنزيل أدناه تشير دائمًا إلى أحدث إصدار Windows منشور.**
 
 | 💾 الملف | 🔗 رابط التحميل المباشر |
 | :--- | :--- |

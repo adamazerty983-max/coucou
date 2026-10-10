@@ -71,7 +71,56 @@ pub fn start(app: AppHandle) {
     spawn(app.clone(), "integration_github", 7, 300, poll_github);
     spawn_github_loops(app.clone());
     spawn(app.clone(), "integration_calcom", 8, 300, poll_calcom);
-    spawn(app, "integration_notion", 9, 300, poll_notion);
+    spawn(app.clone(), "integration_notion", 9, 300, poll_notion);
+    #[cfg(windows)]
+    spawn_minimax_monitor(app);
+}
+
+#[cfg(windows)]
+fn spawn_minimax_monitor(app: AppHandle) {
+    use std::collections::HashMap;
+    use std::sync::OnceLock;
+    static LAST: OnceLock<Mutex<HashMap<u32, bool>>> = OnceLock::new();
+    let last = LAST.get_or_init(|| Mutex::new(HashMap::new()));
+    let last_ptr: &'static Mutex<HashMap<u32, bool>> = last;
+    tauri::async_runtime::spawn(async move {
+        let mut ticker = tokio::time::interval(Duration::from_secs(2));
+        loop {
+            ticker.tick().await;
+            if PAUSED.load(Ordering::Relaxed) { continue; }
+            let windows = crate::platform::minimax_code_windows();
+            let mut seen = HashMap::new();
+            for (pid, title) in windows {
+                let status = title.split('|').next().unwrap_or_default().trim().to_lowercase();
+                let working = !status.is_empty() && !matches!(status.as_str(), "idle" | "ready" | "completed" | "finished");
+                let previous_window = seen.insert(pid, working);
+                let changed = previous_window != Some(working)
+                    && last_ptr.lock().unwrap().get(&pid).copied() != Some(working);
+                if changed {
+                    let payload = json!({
+                        "hook_event_name": "MiniMaxStatus",
+                        "coucou_agent": "minimax",
+                        "session_id": format!("minimax-{pid}"),
+                        "cwd": "",
+                        "message": if working { "working" } else { "idle" },
+                        "title": title,
+                    });
+                    let _ = app.emit_to(WINDOW_LABEL, "hook", payload);
+                }
+            }
+            let mut state = last_ptr.lock().unwrap();
+            let missing: Vec<u32> = state.keys().filter(|pid| !seen.contains_key(pid)).copied().collect();
+            for pid in missing {
+                if state.remove(&pid) == Some(true) {
+                    let _ = app.emit_to(WINDOW_LABEL, "hook", json!({
+                        "hook_event_name": "MiniMaxStatus", "coucou_agent": "minimax",
+                        "session_id": format!("minimax-{pid}"), "cwd": "", "message": "idle"
+                    }));
+                }
+            }
+            state.extend(seen);
+        }
+    });
 }
 
 /// True when the user has this integration switched on in settings.

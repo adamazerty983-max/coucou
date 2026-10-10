@@ -90,6 +90,54 @@ fn is_plain(path: &str) -> bool {
 
 type JsonChange = Box<dyn Fn(&Value) -> Result<Option<Value>, String>>;
 
+/// MiniMax Code currently exposes session activity through its terminal title,
+/// not through agent hooks. Preserve the user's YAML and only edit this one key.
+fn minimax_title_edit(current: Option<&str>, install: bool) -> Result<Option<String>, String> {
+    const MARKER: &str = "  # Managed by Coucou";
+    const TITLE: &str = "  terminalTitle: [status, session-name, app-name]";
+    let Some(text) = current else {
+        return Ok(install.then(|| format!("tui:\n{MARKER}\n{TITLE}\n")));
+    };
+    let lines: Vec<&str> = text.lines().collect();
+    let tui_lines: Vec<usize> = lines.iter().enumerate().filter_map(|(i, l)| l.trim().starts_with("tui:").then_some(i)).collect();
+    if tui_lines.len() > 1 { return Err(crate::i18n::t("MiniMax Code config has multiple tui sections — Coucou won't change it.")); }
+    let Some(tui) = tui_lines.first().copied() else {
+        if !install { return Ok(Some(text.to_string())); }
+        let mut out = text.trim_end_matches(|c| c == '\r' || c == '\n').to_string();
+        if !out.is_empty() { out.push('\n'); }
+        out.push_str("tui:\n"); out.push_str(MARKER); out.push('\n'); out.push_str(TITLE); out.push('\n');
+        return Ok(Some(out));
+    };
+    if lines[tui].trim() != "tui:" && !lines[tui].trim().starts_with("tui: #") {
+        return Err(crate::i18n::t("MiniMax Code tui config uses an inline value — Coucou won't rewrite it."));
+    }
+    let end = lines.iter().enumerate().skip(tui + 1)
+        .find_map(|(i, l)| (!l.trim().is_empty() && !l.starts_with(' ') && !l.starts_with('\t') && !l.trim_start().starts_with('#')).then_some(i))
+        .unwrap_or(lines.len());
+    let key_lines: Vec<usize> = (tui + 1..end).filter(|&i| {
+        let l = lines[i].trim_start();
+        l.starts_with("terminalTitle:") || l.starts_with("terminalTitle :")
+    }).collect();
+    if key_lines.len() > 1 { return Err(crate::i18n::t("MiniMax Code config has multiple terminalTitle values — Coucou won't change it.")); }
+    if let Some(&idx) = key_lines.first() {
+        if lines[idx].trim() != "terminalTitle: [status, session-name, app-name]" {
+            return Err(crate::i18n::t("MiniMax Code already has a different terminalTitle value — Coucou won't replace it."));
+        }
+        if !install {
+            if idx == 0 || lines[idx - 1].trim() != "# Managed by Coucou" {
+                return Ok(Some(text.to_string()));
+            }
+            let mut out = lines.clone(); out.drain(idx - 1..=idx);
+            return Ok(Some(out.join("\n") + if text.ends_with('\n') { "\n" } else { "" }));
+        }
+        if idx > 0 && lines[idx - 1].trim() == "# Managed by Coucou" { return Ok(Some(text.to_string())); }
+        return Err(crate::i18n::t("MiniMax Code already has this terminal title setting. Coucou won't claim or remove a setting it did not add."));
+    }
+    if !install { return Ok(Some(text.to_string())); }
+    let mut out = lines.clone(); out.insert(end, TITLE); out.insert(end, MARKER);
+    Ok(Some(out.join("\n") + if text.ends_with('\n') { "\n" } else { "" }))
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Agent {
     Gemini,
@@ -102,6 +150,7 @@ pub enum Agent {
     Amp,
     Hermes,
     ZCode,
+    MiniMaxCode,
 }
 
 impl Agent {
@@ -116,6 +165,7 @@ impl Agent {
         Agent::Amp,
         Agent::Hermes,
         Agent::ZCode,
+        Agent::MiniMaxCode,
     ];
 
     /// The `--agent` name; the pill is `agent_<id>` (PillCatalog.swift).
@@ -131,6 +181,7 @@ impl Agent {
             Agent::Amp => "amp",
             Agent::Hermes => "hermes",
             Agent::ZCode => "zcode",
+            Agent::MiniMaxCode => "minimax",
         }
     }
 
@@ -155,12 +206,18 @@ impl Agent {
                 vec![dir.join("__init__.py"), dir.join("plugin.yaml")]
             }
             Agent::ZCode => vec![home.join(".zcode").join("cli").join("config.json")],
+            Agent::MiniMaxCode => vec![home.join(".minimax").join("config.yaml")],
         }
     }
 
     /// The edits that install (or remove) Coucou for this agent.
     fn edits(self, home: &Path, relay: &Relay, install: bool) -> Vec<FileEdit<'static>> {
         let files = self.files(home);
+        if self == Agent::MiniMaxCode {
+            let path = files[0].clone();
+            let label = path.display().to_string();
+            return vec![FileEdit { path, edit: config_file::text_edit(label, move |current| minimax_title_edit(current, install)) }];
+        }
         if let Some(contents) = self.plugin(relay) {
             return files.into_iter().zip(contents).map(|(path, text)| plugin_edit(path, text, install)).collect();
         }
@@ -238,6 +295,7 @@ impl Agent {
                 let command = relay.exe.clone();
                 Box::new(move |v| zcode_install(v, Some(&command)).map(Some))
             }
+            (Agent::MiniMaxCode, _) => Box::new(|_| Err(crate::i18n::t("MiniMax Code uses terminal status monitoring, not hook entries."))),
             // Plugins are whole files (see `plugin`), never merged into JSON.
             (Agent::OpenCode | Agent::Amp | Agent::Hermes, _) => {
                 Box::new(|_| Err(crate::i18n::t("This agent takes a plugin, not hook entries.")))
@@ -270,6 +328,13 @@ impl Agent {
                 .is_some_and(|h| h.values().filter_map(Value::as_array).flatten().any(copilot_entry_is_ours)),
             Agent::Muse => groups_have_ours(&json(), "muse"),
             Agent::ZCode => zcode_has_ours(&json()),
+            Agent::MiniMaxCode => std::fs::read_to_string(&files[0]).is_ok_and(|s| {
+                let lines: Vec<&str> = s.lines().collect();
+                lines.iter().enumerate().any(|(i, l)| {
+                    l.trim() == "terminalTitle: [status, session-name, app-name]"
+                        && i > 0 && lines[i - 1].trim() == "# Managed by Coucou"
+                })
+            }),
             Agent::OpenCode | Agent::Amp | Agent::Hermes => false,
         }
     }
@@ -298,6 +363,7 @@ impl Agent {
             Agent::Amp => "Amp",
             Agent::Hermes => "Hermes Agent",
             Agent::ZCode => "Z Code",
+            Agent::MiniMaxCode => "MiniMax Code",
         }
     }
 
@@ -315,6 +381,7 @@ impl Agent {
             Agent::Amp => t("Restart Amp to load the plugin."),
             Agent::Hermes => t("Turn it on once with `hermes plugins enable coucou`, then start a new Hermes session."),
             Agent::ZCode => t("Start a new Z Code session to pick the hooks up."),
+            Agent::MiniMaxCode => t("Restart MiniMax Code. Coucou reads its terminal title to show when it is working; detailed tool steps are not available."),
         }
     }
 }
@@ -349,7 +416,7 @@ pub fn list() -> Vec<AgentStatus> {
             name: a.name(),
             installed: a.installed(&home),
             path: a.files(&home).iter().map(|p| p.display().to_string()).collect::<Vec<_>>().join("\n"),
-            hook_ready,
+            hook_ready: a == Agent::MiniMaxCode || hook_ready,
             approvals: a.approvals(),
             note: a.note(),
         })

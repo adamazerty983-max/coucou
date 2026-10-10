@@ -335,3 +335,9 @@ Réglages → Chat → Local models → **Disconnect**. Efface l'URL sauvegardé
 Aucune permission Accessibilité nécessaire.
 
 
+# MiniMax Code (Windows)
+
+Settings → Agents → **MiniMax Code** can enable MiniMax Code's native terminal title in `%USERPROFILE%\.minimax\config.yaml`. Coucou shows a preview before writing and backs up an existing config. Restart MiniMax Code after installing. Coucou reads visible MiniMax Code window titles locally and updates the MiniMax Code pill when the title reports an active or idle state.
+
+This is coarse activity monitoring, not a hook integration: MiniMax Code does not currently provide hook callbacks for each prompt or tool. It cannot show per-tool progress, approval cards, or conversation text. In VS Code, MiniMax Code documents `"terminal.integrated.tabs.title": "${sequence}"` to show its session title in the terminal tab; Coucou's native-window monitor can only see titles exposed by the host window.
+

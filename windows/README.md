@@ -365,6 +365,7 @@ Linux.
 | Amp | plugin `.config\amp\plugins\coucou.ts` | asked in Amp |
 | Hermes Agent | plugin `.hermes\plugins\coucou\` — then `hermes plugins enable coucou` once | asked in Hermes |
 | Z Code | `.zcode\cli\config.json` | displayed in the island |
+| MiniMax Code | `.minimax\config.yaml` — enables MiniMax Code's native terminal title; Coucou watches its visible window for active/idle state | coarse activity only; no per-tool steps or approval cards |
 | Any other | run `coucou-hook --agent <name> [<Event>]` from your tool's hooks | asked in the tool |
 
 The relay maps every agent's event and field names onto Claude Code's (Gemini

@@ -30,3 +30,4 @@ Windows and Linux: `cd windows && npm install && npm run tauri dev`
 - Pill IDs are stable contract values (Keychain, UserDefaults, hook routing): never rename an existing pill ID.
 - New views follow the existing app style. `design/prototype/notch-buddy.html` and `design/captures/` are references for new work, not a reason to change existing views.
 - Every release adds its CHANGELOG.md section, a row in the README Versions table, and commits the regenerated Info.plist with the new version.
+- **User delivery preference for this fork:** when adding a feature or integration, push the finished changes to `adamazerty983-max/coucou` and update the rolling Windows release at `windows-latest` so the README download links deliver a build containing the change. Verify the GitHub Actions build and release assets before telling the user the upload is complete.
